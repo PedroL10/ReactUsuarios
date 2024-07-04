@@ -16,6 +16,7 @@ import { classNames } from 'primereact/utils';
 import React, { useEffect, useRef, useState } from 'react';
 import { ProductService } from '../../../../demo/service/ProductService';
 import { Projeto } from '@/types';
+import { UsuarioService } from '@/service/UsuarioService';
 
 /* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
 const Crud = () => {
@@ -38,9 +39,16 @@ const Crud = () => {
     const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
+    const usuarioService = new UsuarioService();
 
     useEffect(() => {
         //ProductService.getProducts().then((data) => setProducts(data as any));
+        usuarioService.listarTodos().then((response) => {
+            console.log(response.data)
+            setUsuarios(response.data)
+        } ).catch((error) => {
+            console.log(error)
+        })
     }, []);
     
 
@@ -375,11 +383,8 @@ const Crud = () => {
                                 })}
                             />
                             {submitted && !usuario.email && <small className="p-invalid">Email is required.</small>}
-                        </div>
-                       
-                    
+                        </div>         
 
-                    
                     </Dialog>
 
                     <Dialog visible={deleteUsuarioDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteUsuarioDialogFooter} onHide={hideDeleteUsuarioDialog}>
@@ -393,7 +398,7 @@ const Crud = () => {
                         </div>
                     </Dialog>
 
-                    <Dialog visible={deleteUsuariosDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteUsuariosDialogFooter} onHide={hideDeleteUsuariosDialog}>
+                    <Dialog visible={deleteUsuarioDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteUsuarioDialogFooter} onHide={hideDeleteUsuarioDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                             {usuario && <span>Tem  certeza que quer deletar o usuarios selecionado?</span>}
