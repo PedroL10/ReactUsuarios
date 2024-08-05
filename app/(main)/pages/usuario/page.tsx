@@ -5,31 +5,26 @@ import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Dialog } from 'primereact/dialog';
 import { FileUpload } from 'primereact/fileupload';
-import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { RadioButton, RadioButtonChangeEvent } from 'primereact/radiobutton';
-import { Rating } from 'primereact/rating';
 import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
-import React, { useEffect, useRef, useState } from 'react';
-import { ProductService } from '../../../../demo/service/ProductService';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Projeto } from '@/types';
 import { UsuarioService } from '@/service/UsuarioService';
 
 /* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
-const Crud = () => {
+const Usuario = () => {
     let usuarioVazio: Projeto.Usuario = {
         id: 0,
         nome: '',
         login: '',
         senha: '',
         email: ''
-       
+
     };
 
-    const [usuarios, setUsuarios] = useState(null);
+    const [usuarios, setUsuarios] = useState<Projeto.Usuario[]>([]);
     const [usuarioDialog, setUsuarioDialog] = useState(false);
     const [deleteUsuarioDialog, setDeleteUsuarioDialog] = useState(false);
     const [deleteUsuariosDialog, setDeleteUsuariosDialog] = useState(false);
@@ -39,18 +34,19 @@ const Crud = () => {
     const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
-    const usuarioService = new UsuarioService();
+    const usuarioService = useMemo(() => new UsuarioService(), []);
 
     useEffect(() => {
-        //ProductService.getProducts().then((data) => setProducts(data as any));
-        usuarioService.listarTodos().then((response) => {
-            console.log(response.data)
-            setUsuarios(response.data)
-        } ).catch((error) => {
-            console.log(error)
-        })
-    }, []);
-    
+        if (usuarios.length == 0) {
+            usuarioService.listarTodos().then((response) => {
+                console.log(response.data)
+                setUsuarios(response.data)
+            }).catch((error) => {
+                console.log(error)
+            })
+        }
+    }, [usuarioService, usuarios]);
+
 
     const openNew = () => {
         setUsuario(usuarioVazio);
@@ -74,35 +70,48 @@ const Crud = () => {
     const saveUsuario = () => {
         setSubmitted(true);
 
-        // if (product.name.trim()) {
-        //     let _products = [...(products as any)];
-        //     let _product = { ...product };
-        //     if (product.id) {
-        //         const index = findIndexById(product.id);
+        if (!usuario.id) {
+            usuarioService.inserir(usuario)
+                .then((response) => {
+                    console.log(response.data);
+                    setUsuarioDialog(false);
+                    setUsuario(usuarioVazio);
+                    setUsuarios([]);
+                    toast.current?.show({
+                        severity: 'info',
+                        summary: 'Informação',
+                        detail: 'Usuário cadastrado com sucesso',
+                    });
+                }).catch((error) => {
+                    console.log(error);
+                    toast.current?.show({
+                        severity: 'error',
+                        summary: 'Erro',
+                        detail: 'Erro ao salvar!' + error.data.message,
+                    })
+                });
 
-        //         _products[index] = _product;
-        //         toast.current?.show({
-        //             severity: 'success',
-        //             summary: 'Successful',
-        //             detail: 'Product Updated',
-        //             life: 3000
-        //         });
-        //     } else {
-        //         _product.id = createId();
-        //         _product.image = 'product-placeholder.svg';
-        //         _products.push(_product);
-        //         toast.current?.show({
-        //             severity: 'success',
-        //             summary: 'Successful',
-        //             detail: 'Product Created',
-        //             life: 3000
-        //         });
-        //     }
+        } else {
+            usuarioService.alterar(usuario).then((response) => {
+                setUsuarioDialog(false);
+                setUsuario(usuarioVazio);
+                setUsuarios([]);
+                toast.current?.show({
+                    severity: 'info',
+                    summary: 'Informação',
+                    detail: 'Usuário alterado com sucesso',
+                });
+            }).catch((error) => {
+                console.log(error);
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Erro',
+                    detail: 'Erro ao salvar!' + error.data.message,
+                })
+            });
 
-            // setProducts(_products as any);
-            // setProductDialog(false);
-            // setProduct(emptyProduct);
-        //}
+        }
+
     };
 
     const editUsuario = (usuario: Projeto.Usuario) => {
@@ -115,39 +124,33 @@ const Crud = () => {
         setDeleteUsuarioDialog(true);
     };
 
-     const deleteUsuario = () => {
-    //     let _products = (usuarios as any)?.filter((val: any) => val.id !== usuario.id);
-    //     setUsuarios(_products);
-    //     setDeleteUsuarioDialog(false);
-    //     setUsuario(usuarioVazio);
-    //     toast.current?.show({
-    //         severity: 'success',
-    //         summary: 'Successful',
-    //         detail: 'Product Deleted',
-    //         life: 3000
-    //     });
-     };
+    const deleteUsuario = () => {
+        if (usuario.id) {
 
-    // const findIndexById = (id: string) => {
-    //     let index = -1;
-    //     for (let i = 0; i < (usuarios as any)?.length; i++) {
-    //         if ((usuarios as any)[i].id === id) {
-    //             index = i;
-    //             break;
-    //         }
-    //     }
+            usuarioService.excluir(usuario.id).then((response) => {
+                setUsuario(usuarioVazio);
+                setDeleteUsuarioDialog(false);
+                setUsuarios([]);
 
-    //     return index;
-    // };
+                toast.current?.show({
+                    severity: 'success',
+                    summary: 'Sucesso!',
+                    detail: 'Usuario deletado com sucesso',
+                });
 
-    // const createId = () => {
-    //     let id = '';
-    //     let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    //     for (let i = 0; i < 5; i++) {
-    //         id += chars.charAt(Math.floor(Math.random() * chars.length));
-    //     }
-    //     return id;
-    // };
+            }).catch((error) => {
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Erro!',
+                    detail: 'Erro ao deletar ususario',
+
+                });
+            });
+        }
+
+    };
+
+
 
     const exportCSV = () => {
         dt.current?.exportCSV();
@@ -158,23 +161,9 @@ const Crud = () => {
     };
 
     const deleteSelectedUsuarios = () => {
-        // let _products = (products as any)?.filter((val: any) => !(selectedProducts as any)?.includes(val));
-        // setProducts(_products);
-        // setDeleteProductsDialog(false);
-        // setSelectedProducts(null);
-        // toast.current?.show({
-        //     severity: 'success',
-        //     summary: 'Successful',
-        //     detail: 'Products Deleted',
-        //     life: 3000
-        // });
+
     };
 
-    // const onCategoryChange = (e: RadioButtonChangeEvent) => {
-    //     let _product = { ...product };
-    //     _product['category'] = e.value;
-    //     setProduct(_product);
-    // };
 
     const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, name: string) => {
         const val = (e.target && e.target.value) || '';
@@ -184,13 +173,7 @@ const Crud = () => {
         setUsuario(_usuario);
     };
 
-    // const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
-    //     const val = e.value || 0;
-    //     let _product = { ...product };
-    //     _product[`${name}`] = val;
 
-    //     setProduct(_product);
-    // };
 
     const leftToolbarTemplate = () => {
         return (
@@ -249,7 +232,7 @@ const Crud = () => {
     };
 
 
- 
+
 
 
     const actionBodyTemplate = (rowData: Projeto.Usuario) => {
@@ -279,14 +262,14 @@ const Crud = () => {
     );
     const deleteUsuarioDialogFooter = (
         <>
-            <Button label="No" icon="pi pi-times" text onClick={hideDeleteUsuariosDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteUsuario} />
+            <Button label="Não" icon="pi pi-times" text onClick={hideDeleteUsuariosDialog} />
+            <Button label="Sim" icon="pi pi-check" text onClick={deleteUsuario} />
         </>
     );
     const deleteUsuariosDialogFooter = (
         <>
-            <Button label="No" icon="pi pi-times" text onClick={hideDeleteUsuariosDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteSelectedUsuarios} />
+            <Button label="Não" icon="pi pi-times" text onClick={hideDeleteUsuariosDialog} />
+            <Button label="Sim" icon="pi pi-check" text onClick={deleteSelectedUsuarios} />
         </>
     );
 
@@ -319,12 +302,12 @@ const Crud = () => {
                         <Column field="nome" header="Nome" sortable body={nomeBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
                         <Column field="login" header="Login" sortable body={loginBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
                         <Column field="email" header="Email" sortable body={emailBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
-                        
+
                         <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
                     </DataTable>
 
                     <Dialog visible={usuarioDialog} style={{ width: '450px' }} header="Detalhes do Usuario" modal className="p-fluid" footer={usuarioDialogFooter} onHide={hideDialog}>
-                        
+
                         <div className="field">
                             <label htmlFor="nome">Nome</label>
                             <InputText
@@ -383,7 +366,7 @@ const Crud = () => {
                                 })}
                             />
                             {submitted && !usuario.email && <small className="p-invalid">Email is required.</small>}
-                        </div>         
+                        </div>
 
                     </Dialog>
 
@@ -410,4 +393,4 @@ const Crud = () => {
     );
 };
 
-export default Crud;
+export default Usuario;
