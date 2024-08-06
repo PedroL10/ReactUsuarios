@@ -29,7 +29,7 @@ const Usuario = () => {
     const [deleteUsuarioDialog, setDeleteUsuarioDialog] = useState(false);
     const [deleteUsuariosDialog, setDeleteUsuariosDialog] = useState(false);
     const [usuario, setUsuario] = useState<Projeto.Usuario>(usuarioVazio);
-    const [selectedUsuarios, setSelectedUsuarios] = useState(null);
+    const [selectedUsuarios, setSelectedUsuarios] = useState<Projeto.Usuario[]>([]);
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef<Toast>(null);
@@ -157,11 +157,30 @@ const Usuario = () => {
     };
 
     const confirmDeleteSelected = () => {
-        setDeleteUsuarioDialog(true);
+        setDeleteUsuariosDialog(true);
     };
 
     const deleteSelectedUsuarios = () => {
-
+        Promise.all(selectedUsuarios.map(async (_usuario) => {
+            if(_usuario.id) {
+                await usuarioService.excluir(_usuario.id)                        
+            }
+        })).then((response) => {
+            setUsuarios([]);
+            setSelectedUsuarios([]);
+            setDeleteUsuariosDialog(false);
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Sucesso!',
+                detail: 'Usuarios deletados com sucesso',
+            });
+        }).catch((error) => {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Erro!',
+                detail: 'Erro ao deletar usuários',
+            });
+        })
     };
 
 
@@ -375,16 +394,16 @@ const Usuario = () => {
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                             {usuario && (
                                 <span>
-                                    Realmente deseja excluir o usuario?<b>{usuario.nome}</b>?
+                                    Realmente deseja excluir o usuario <b>{usuario.nome}</b>?
                                 </span>
                             )}
                         </div>
                     </Dialog>
 
-                    <Dialog visible={deleteUsuarioDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteUsuarioDialogFooter} onHide={hideDeleteUsuarioDialog}>
+                    <Dialog visible={deleteUsuariosDialog} style={{ width: '450px' }} header="Confirmar" modal footer={deleteUsuariosDialogFooter} onHide={hideDeleteUsuariosDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {usuario && <span>Tem  certeza que quer deletar o usuarios selecionado?</span>}
+                            {usuario && <span>Você realmente deseja excluir os usuários selecionados?</span>}
                         </div>
                     </Dialog>
                 </div>
