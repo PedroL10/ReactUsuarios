@@ -6,10 +6,10 @@ import { BaseService } from "./BaseService";
 //     baseURL : "http://localhost:8080"
 // })
 
-export class UsuarioService extends BaseService {
+export class RecursoService extends BaseService {
 
     constructor(){
-        super("/usuario");
+        super("/recurso");
     }
  
 }
