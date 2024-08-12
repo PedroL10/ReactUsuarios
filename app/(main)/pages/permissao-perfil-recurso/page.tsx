@@ -11,57 +11,58 @@ import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { Projeto } from '@/types';
-import { PerfilUsuarioService } from '../../../../service/PerfilUsuarioService';
+import { PermissaoPerfilRecursoService } from '../../../../service/PermissaoPerfilRecursoService';
 import { userAgent } from 'next/server';
 import { UsuarioService } from '../../../../service/UsuarioService';
 import { PerfilService } from '../../../../service/PerfilService';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
+import { RecursoService } from '../../../../service/RecursoService';
 
-const PerfilUsuario = () => {
-    let perfilUsuarioVazio: Projeto.PerfilUsuario = {
+const PermissaoPerfilRecurso = () => {
+    let permissaoPerfilRecursoVazio: Projeto.PermissaoPerfilRecurso = {
         id: 0,
         perfil: {descricao: ''},
-        usuario: {nome: '', login: '', senha: '', email: ''}
+        recurso: {nome: '', chave: ''}
     };
 
-    const [perfisUsuario, setPerfilsUsuario] = useState<Projeto.PerfilUsuario[] | null>(null);
-    const [perfilUsuarioDialog, setPerfilUsuarioDialog] = useState(false);
-    const [deletePerfilUsuarioDialog, setDeletePerfilUsuarioDialog] = useState(false);
-    const [deletePerfilsUsuarioDialog, setDeletePerfilsUsuarioDialog] = useState(false);
-    const [perfilUsuario, setPerfilUsuario] = useState<Projeto.PerfilUsuario>(perfilUsuarioVazio);
-    const [selectedPerfilsUsuario, setSelectedPerfilsUsuario] = useState<Projeto.PerfilUsuario[]>([]);
+    const [permissaoPerfilRecursos, setPermissaoPerfilRecursos] = useState<Projeto.PermissaoPerfilRecurso[] | null>(null);
+    const [permissaoPerfilRecursoDialog, setPermissaoPerfilRecursoDialog] = useState(false);
+    const [deletePermissaoPerfilRecursoDialog, setDeletePermissaoPerfilRecursoDialog] = useState(false);
+    const [deletePermissaoPerfilRecursosDialog, setDeletePermissaoPerfilRecursosDialog] = useState(false);
+    const [permissaoPerfilRecurso, setPermissaoPerfilRecurso] = useState<Projeto.PermissaoPerfilRecurso>(permissaoPerfilRecursoVazio);
+    const [selectedPermissaoPerfilRecursos, setSelectedPermissaoPerfilRecursos] = useState<Projeto.PermissaoPerfilRecurso[]>([]);
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
-    const perfilUsuarioService = useMemo(() => new PerfilUsuarioService(), []);
-    const usuarioService = useMemo(() => new UsuarioService(), []);
+    const permissaoPerfilRecursoService = useMemo(() => new PermissaoPerfilRecursoService(), []);
+    const recursoService = useMemo(() => new RecursoService(), []);
     const perfilService = useMemo(() => new PerfilService(), []);
-    const [usuarios, setUsuarios] = useState<Projeto.Usuario[]>([]);
+    const [recursos, setRecursos] = useState<Projeto.Recurso[]>([]);
     const [perfis, setPerfis] = useState<Projeto.Perfil[]>([]);
 
     useEffect(() => {
-        if (!perfisUsuario) {
-            perfilUsuarioService.listarTodos()
+        if (!permissaoPerfilRecursos) {
+            permissaoPerfilRecursoService.listarTodos()
                 .then((response) => {
                     console.log(response.data);
-                    setPerfilsUsuario(response.data);      
+                    setPermissaoPerfilRecursos(response.data);      
                 }).catch((error) => {
                     console.log(error);
                 })
         }
-    }, [perfilUsuarioService, perfisUsuario]);
+    }, [permissaoPerfilRecursoService, permissaoPerfilRecursos]);
 
     useEffect(() => {
-        if(perfilUsuarioDialog){
-            usuarioService.listarTodos()
-            .then((response) => setUsuarios(response.data))
+        if(permissaoPerfilRecursoDialog){
+            recursoService.listarTodos()
+            .then((response) => setRecursos(response.data))
             .catch(error => {
                 console.log(error);
                 toast.current?.show({
                     severity: 'info',
                     summary: 'Erro!',
-                    detail: 'Erro ao carregar a lista de usuário!'
+                    detail: 'Erro ao carregar a lista de recurso!'
                 });
             });
             perfilService.listarTodos()
@@ -75,40 +76,40 @@ const PerfilUsuario = () => {
                 });
             });
         }
-    }, [perfilUsuarioDialog, perfilService, usuarioService]);
+    }, [permissaoPerfilRecursoDialog, perfilService, recursoService]);
 
     const openNew = () => {
-        setPerfilUsuario(perfilUsuarioVazio);
+        setPermissaoPerfilRecurso(permissaoPerfilRecursoVazio);
         setSubmitted(false);
-        setPerfilUsuarioDialog(true);
+        setPermissaoPerfilRecursoDialog(true);
     };
 
     const hideDialog = () => {
         setSubmitted(false);
-        setPerfilUsuarioDialog(false);
+        setPermissaoPerfilRecursoDialog(false);
     };
 
-    const hideDeletePerfilDialog = () => {
-        setDeletePerfilUsuarioDialog(false);
+    const hideDeletePermissaoPerfilRecursoDialog = () => {
+        setDeletePermissaoPerfilRecursoDialog(false);
     };
 
-    const hideDeletePerfilsDialog = () => {
-        setDeletePerfilsUsuarioDialog(false);
+    const hideDeletePermissaoPerfilRecursosDialog = () => {
+        setDeletePermissaoPerfilRecursosDialog(false);
     };
 
-    const savePerfilUsuario = () => {
+    const savePermissaoPerfilRecurso = () => {
         setSubmitted(true);
 
-        if (!perfilUsuario.id) {
-            perfilUsuarioService.inserir(perfilUsuario)
+        if (!permissaoPerfilRecurso.id) {
+            permissaoPerfilRecursoService.inserir(permissaoPerfilRecurso)
                 .then((response) => {
-                    setPerfilUsuarioDialog(false);
-                    setPerfilUsuario(perfilUsuarioVazio);
-                    setPerfilsUsuario(null);
+                    setPermissaoPerfilRecursoDialog(false);
+                    setPermissaoPerfilRecurso(permissaoPerfilRecursoVazio);
+                    setPermissaoPerfilRecursos(null);
                     toast.current?.show({
                         severity: 'info',
                         summary: 'Sucesso!',
-                        detail: 'Perfil Usuário cadastrado com sucesso!'
+                        detail: 'Permissão cadastrada com sucesso!'
                     });
                 }).catch((error) => {
                     console.log(error.data.message);
@@ -119,15 +120,15 @@ const PerfilUsuario = () => {
                     })
                 });
         } else {
-            perfilUsuarioService.alterar(perfilUsuario)
+            permissaoPerfilRecursoService.alterar(permissaoPerfilRecurso)
                 .then((response) => {
-                    setPerfilUsuarioDialog(false);
-                    setPerfilUsuario(perfilUsuarioVazio);
-                    setPerfilsUsuario(null);
+                    setPermissaoPerfilRecursoDialog(false);
+                    setPermissaoPerfilRecurso(permissaoPerfilRecursoVazio);
+                    setPermissaoPerfilRecursos(null);
                     toast.current?.show({
                         severity: 'info',
                         summary: 'Sucesso!',
-                        detail: 'Perfil Usuário alterado com sucesso!'
+                        detail: 'Permissão alterada com sucesso!'
                     });
                 }).catch((error) => {
                     console.log(error.data.message);
@@ -140,28 +141,28 @@ const PerfilUsuario = () => {
         }
     }
 
-    const editPerfilUsuario = (perfilUsuario: Projeto.PerfilUsuario) => {
-        setPerfilUsuario({ ...perfilUsuario });
-        setPerfilUsuarioDialog(true);
+    const editPermissaoPerfilRecurso = (permissaoPerfilRecurso: Projeto.PermissaoPerfilRecurso) => {
+        setPermissaoPerfilRecurso({ ...permissaoPerfilRecurso });
+        setPermissaoPerfilRecursoDialog(true);
     };
 
-    const confirmDeletePerfilUsuario = (perfilUsuario: Projeto.PerfilUsuario) => {
-        setPerfilUsuario(perfilUsuario);
-        setDeletePerfilUsuarioDialog(true);
+    const confirmDeletePermissaoPerfilRecurso = (permissaoPerfilRecurso: Projeto.PermissaoPerfilRecurso) => {
+        setPermissaoPerfilRecurso(permissaoPerfilRecurso);
+        setDeletePermissaoPerfilRecursoDialog(true);
     };
 
-    const deletePerfilUsuario = () => {
-        console.log('deletePerfilUsuario');
-        console.log(perfilUsuario.id);
-        if (perfilUsuario.id) {
-            perfilUsuarioService.excluir(perfilUsuario.id).then((response) => {
-                setPerfilUsuario(perfilUsuarioVazio);
-                setDeletePerfilUsuarioDialog(false);
-                setPerfilsUsuario(null);
+    const deletePermissaoPerfilRecurso = () => {
+        console.log('deletePermissaoPerfilRecurso');
+        console.log(permissaoPerfilRecurso.id);
+        if (permissaoPerfilRecurso.id) {
+            permissaoPerfilRecursoService.excluir(permissaoPerfilRecurso.id).then((response) => {
+                setPermissaoPerfilRecurso(permissaoPerfilRecursoVazio);
+                setDeletePermissaoPerfilRecursoDialog(false);
+                setPermissaoPerfilRecursos(null);
                 toast.current?.show({
                     severity: 'success',
                     summary: 'Sucesso!',
-                    detail: 'Perfil Usuário Deletado com Sucesso!',
+                    detail: 'Permissão deletada com sucesso!',
                     life: 3000
                 });
             }).catch((error) => {
@@ -180,23 +181,23 @@ const PerfilUsuario = () => {
     };
 
     const confirmDeleteSelected = () => {
-        setDeletePerfilsUsuarioDialog(true);
+        setDeletePermissaoPerfilRecursosDialog(true);
     };
 
-    const deleteSelectedPerfilsUsuario = () => {
+    const deleteSelectedPermissaoPerfilRecursos = () => {
 
-        Promise.all(selectedPerfilsUsuario.map(async (_perfilUsuario) => {
-            if (_perfilUsuario.id) {
-                await perfilUsuarioService.excluir(_perfilUsuario.id);
+        Promise.all(selectedPermissaoPerfilRecursos.map(async (_permissaoPerfilRecurso) => {
+            if (_permissaoPerfilRecurso.id) {
+                await permissaoPerfilRecursoService.excluir(_permissaoPerfilRecurso.id);
             }
         })).then((response) => {
-            setPerfilsUsuario(null);
-            setSelectedPerfilsUsuario([]);
-            setDeletePerfilsUsuarioDialog(false);
+            setPermissaoPerfilRecursos(null);
+            setSelectedPermissaoPerfilRecursos([]);
+            setDeletePermissaoPerfilRecursosDialog(false);
             toast.current?.show({
                 severity: 'success',
                 summary: 'Sucesso!',
-                detail: 'Perfils Usuário Deletados com Sucesso!',
+                detail: 'Permissao deletadas com Sucesso!',
                 life: 3000
             });
         }).catch((error) => {
@@ -211,9 +212,8 @@ const PerfilUsuario = () => {
 
     const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, name: string) => {
         const val = (e.target && e.target.value) || '';
-  
-        setPerfilUsuario(prevPerfilUsuario => ({
-             ...prevPerfilUsuario,
+        setPermissaoPerfilRecurso(prevPermissaoPerfilRecurso => ({
+             ...prevPermissaoPerfilRecurso,
              [name]: val,
         }));
     };
@@ -223,7 +223,7 @@ const PerfilUsuario = () => {
             <React.Fragment>
                 <div className="my-2">
                     <Button label="Novo" icon="pi pi-plus" severity="success" className=" mr-2" onClick={openNew} />
-                    <Button label="Excluir" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedPerfilsUsuario || !(selectedPerfilsUsuario as any).length} />
+                    <Button label="Excluir" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedPermissaoPerfilRecursos || !(selectedPermissaoPerfilRecursos as any).length} />
                 </div>
             </React.Fragment>
         );
@@ -247,7 +247,7 @@ const PerfilUsuario = () => {
         );
     };
 
-    const perfilBodyTemplate = (rowData: Projeto.PerfilUsuario) => {
+    const perfilBodyTemplate = (rowData: Projeto.PermissaoPerfilRecurso) => {
         return (
             <>
                 <span className="p-column-title">Perfil</span>
@@ -256,27 +256,27 @@ const PerfilUsuario = () => {
         );
     };
 
-    const usuarioBodyTemplate = (rowData: Projeto.PerfilUsuario) => {
+    const recursoBodyTemplate = (rowData: Projeto.PermissaoPerfilRecurso) => {
         return (
             <>
-                <span className="p-column-title">Usuário</span>
-                {rowData.usuario.nome}
+                <span className="p-column-title">Recurso</span>
+                {rowData.recurso.nome}
             </>
         );
     };
 
-    const actionBodyTemplate = (rowData: Projeto.PerfilUsuario) => {
+    const actionBodyTemplate = (rowData: Projeto.PermissaoPerfilRecurso) => {
         return (
             <>
-                <Button icon="pi pi-pencil" rounded severity="success" className="mr-2" onClick={() => editPerfilUsuario(rowData)} />
-                <Button icon="pi pi-trash" rounded severity="warning" onClick={() => confirmDeletePerfilUsuario(rowData)} />
+                <Button icon="pi pi-pencil" rounded severity="success" className="mr-2" onClick={() => editPermissaoPerfilRecurso(rowData)} />
+                <Button icon="pi pi-trash" rounded severity="warning" onClick={() => confirmDeletePermissaoPerfilRecurso(rowData)} />
             </>
         );
     };
 
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 className="m-0">Gerenciamento de Perfils Usuário</h5>
+            <h5 className="m-0">Gerenciamento de Permissão de Perfil</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
                 <InputText type="search" onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Search..." />
@@ -287,32 +287,32 @@ const PerfilUsuario = () => {
     const perfilDialogFooter = (
         <>
             <Button label="Cancelar" icon="pi pi-times" text onClick={hideDialog} />
-            <Button label="Salvar" icon="pi pi-check" text onClick={savePerfilUsuario} />
+            <Button label="Salvar" icon="pi pi-check" text onClick={savePermissaoPerfilRecurso} />
         </>
     );
     const deletePerfilDialogFooter = (
         <>
-            <Button label="Não" icon="pi pi-times" text onClick={hideDeletePerfilDialog} />
-            <Button label="Sim" icon="pi pi-check" text onClick={deletePerfilUsuario} />
+            <Button label="Não" icon="pi pi-times" text onClick={hideDeletePermissaoPerfilRecursoDialog} />
+            <Button label="Sim" icon="pi pi-check" text onClick={deletePermissaoPerfilRecurso} />
         </>
     );
     const deletePerfilsDialogFooter = (
         <>
-            <Button label="Não" icon="pi pi-times" text onClick={hideDeletePerfilsDialog} />
-            <Button label="Sim" icon="pi pi-check" text onClick={deleteSelectedPerfilsUsuario} />
+            <Button label="Não" icon="pi pi-times" text onClick={hideDeletePermissaoPerfilRecursosDialog} />
+            <Button label="Sim" icon="pi pi-check" text onClick={deleteSelectedPermissaoPerfilRecursos} />
         </>
     );
 
     const onSelectPerfilChange = (perfil: Projeto.Perfil) => {
-        let _perfilUsuario = { ...perfilUsuario};
-        _perfilUsuario.perfil = perfil;
-        setPerfilUsuario(_perfilUsuario);
+        let _permissaoPerfilRecurso = { ...permissaoPerfilRecurso};
+        _permissaoPerfilRecurso.perfil = perfil;
+        setPermissaoPerfilRecurso(_permissaoPerfilRecurso);
     }
 
-    const onSelectUsuarioChange = (usuario: Projeto.Usuario) => {
-        let _perfilUsuario = { ...perfilUsuario};
-        _perfilUsuario.usuario = usuario;
-        setPerfilUsuario(_perfilUsuario);
+    const onSelectRecursoChange = (recurso: Projeto.Recurso) => {
+        let _permissaoPerfilRecurso = { ...permissaoPerfilRecurso};
+        _permissaoPerfilRecurso.recurso = recurso;
+        setPermissaoPerfilRecurso(_permissaoPerfilRecurso);
     }
 
     return (
@@ -324,9 +324,9 @@ const PerfilUsuario = () => {
 
                     <DataTable
                         ref={dt}
-                        value={perfisUsuario}
-                        selection={selectedPerfilsUsuario}
-                        onSelectionChange={(e) => setSelectedPerfilsUsuario(e.value as any)}
+                        value={permissaoPerfilRecursos}
+                        selection={selectedPermissaoPerfilRecursos}
+                        onSelectionChange={(e) => setSelectedPermissaoPerfilRecursos(e.value as any)}
                         dataKey="id"
                         paginator
                         rows={10}
@@ -335,48 +335,48 @@ const PerfilUsuario = () => {
                         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                         currentPageReportTemplate="Mostrando {first} até {last} de {totalRecords} perfis"
                         globalFilter={globalFilter}
-                        emptyMessage="Nenhum perfil usuário encontrado."
+                        emptyMessage="Nenhuma permissãoencontrada."
                         header={header}
                         responsiveLayout="scroll"
                     >
                         <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
                         <Column field="id" header="Código" sortable body={idBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
                         <Column field="perfil" header="Perfil" sortable body={perfilBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>                        
-                        <Column field="usuario" header="Usuário" sortable body={usuarioBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>                        
+                        <Column field="recurso" header="Recurso" sortable body={recursoBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>                        
                         <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
                     </DataTable>
 
-                    <Dialog visible={perfilUsuarioDialog} style={{ width: '450px' }} header="Detalhes de Perfil Usuário" modal className="p-fluid" footer={perfilDialogFooter} onHide={hideDialog}>
+                    <Dialog visible={permissaoPerfilRecursoDialog} style={{ width: '450px' }} header="Detalhes de Perfil Usuário" modal className="p-fluid" footer={perfilDialogFooter} onHide={hideDialog}>
 
                         <div className="field">
                             <label htmlFor="perfil">Perfil</label>
-                            <Dropdown optionLabel="descricao" value={perfilUsuario.perfil} options={perfis} filter onChange={(e: DropdownChangeEvent) => onSelectPerfilChange(e.value)} placeholder='Selecione um perfil...'/>
-                            {submitted && !perfilUsuario.perfil && <small className="p-invalid">Perfil é obrigatório.</small>}
+                            <Dropdown optionLabel="descricao" value={permissaoPerfilRecurso.perfil} options={perfis} filter onChange={(e: DropdownChangeEvent) => onSelectPerfilChange(e.value)} placeholder='Selecione um perfil...'/>
+                            {submitted && !permissaoPerfilRecurso.perfil && <small className="p-invalid">Perfil é obrigatório.</small>}
                         </div>
 
                         <div className="field">
-                            <label htmlFor="usuario">Usuário</label>
-                            <Dropdown optionLabel="nome" value={perfilUsuario.usuario} options={usuarios} filter onChange={(e: DropdownChangeEvent) => onSelectUsuarioChange(e.value)} placeholder='Selecione um usuario...'/>
-                            {submitted && !perfilUsuario.usuario && <small className="p-invalid">Perfil é obrigatório.</small>}
+                            <label htmlFor="recurso">Recurso</label>
+                            <Dropdown optionLabel="nome" value={permissaoPerfilRecurso.recurso} options={recursos} filter onChange={(e: DropdownChangeEvent) => onSelectRecursoChange(e.value)} placeholder='Selecione um recurso...'/>
+                            {submitted && !permissaoPerfilRecurso.recurso && <small className="p-invalid">Recurso é obrigatório.</small>}
                         </div>
-
+                        
                     </Dialog>
 
-                    <Dialog visible={deletePerfilUsuarioDialog} style={{ width: '450px' }} header="Confirmar" modal footer={deletePerfilDialogFooter} onHide={hideDeletePerfilDialog}>
+                    <Dialog visible={deletePermissaoPerfilRecursoDialog} style={{ width: '450px' }} header="Confirmar" modal footer={deletePerfilDialogFooter} onHide={hideDeletePermissaoPerfilRecursoDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {perfilUsuario && (
+                            {permissaoPerfilRecurso && (
                                 <span>
-                                    Você realmente deseja excluir o perfil usuário <b>{perfilUsuario.id}</b>?
+                                    Você realmente deseja excluir a permissão <b>{permissaoPerfilRecurso.id}</b>?
                                 </span>
                             )}
                         </div>
                     </Dialog>
 
-                    <Dialog visible={deletePerfilsUsuarioDialog} style={{ width: '450px' }} header="Confirmar" modal footer={deletePerfilsDialogFooter} onHide={hideDeletePerfilsDialog}>
+                    <Dialog visible={deletePermissaoPerfilRecursosDialog} style={{ width: '450px' }} header="Confirmar" modal footer={deletePerfilsDialogFooter} onHide={hideDeletePermissaoPerfilRecursosDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {perfilUsuario && <span>Você realmente deseja excluir os perfis selecionados?</span>}
+                            {permissaoPerfilRecurso && <span>Você realmente deseja excluir as permissões selecionados?</span>}
                         </div>
                     </Dialog>
                 </div>
@@ -385,4 +385,4 @@ const PerfilUsuario = () => {
     );
 };
 
-export default PerfilUsuario;
+export default PermissaoPerfilRecurso;
